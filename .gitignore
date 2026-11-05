@@ -8,3 +8,7 @@ work/
 
 # Local presentation exports
 *.pptx
+
+# Static demo build artifacts
+out/
+.pages-build-*/

@@ -1,33 +1,65 @@
 # TestBench
 
-A creative experiment studio for the Meta AI Developer Hackathon. Choose background, product composition, headline or artwork CTA; compare three variants while holding the other elements fixed.
+**One product. One variable. A creative experiment worth running.**
 
+[**Open the interactive demo →**](https://muhamed-kanapiya.github.io/testbench/) · [Experiment studio](https://muhamed-kanapiya.github.io/testbench/studio/) · [Connect your Meta API](#run-locally-with-your-own-meta-api-key)
+
+TestBench helps performance marketers and small brands prepare comparable ad creatives. Choose a background, product composition, headline or artwork CTA experiment, then compare A/B/C while keeping the other elements fixed.
+
+Built for **Build for Your World** at the Meta AI Developer Hackathon.
 
 ![TestBench placement studio](docs/studio-preview.jpg)
 
-## Hackathon entry
+## Try the public demo
 
-Built for **Build for Your World** in the Meta AI Developer Hackathon. TestBench prepares comparable ad creatives and an experiment brief for performance marketers and small brands. The working prototype includes four experiment modes, placement previews and a nine-image campaign export.
+**No account, API key or installation required.** The GitHub Pages demo uses bundled example images and curated copy. It makes no Meta API requests and does not simulate live generation.
 
-- **Start with the included example:** explore editing, placement previews and export locally.
-- **Connect Meta Model API:** add your own server-side key to use SAM segmentation, Muse Image backgrounds and Muse Spark copy and hypotheses.
-- **Review the result:** the app prepares assets for a campaign test. It does not run ads or estimate performance.
+1. Choose **Background**, **Product composition**, **Headline** or **Call to action**.
+2. Edit your message, composition, logo, colours, offer badge and price overlays.
+3. Preview 4:5, 1:1 and 9:16 creatives in Instagram Feed, Facebook Feed and Stories simulations.
+4. Download a PNG or export all **nine creatives**, the product layer and the experiment brief as a ZIP.
 
-## Run locally
+Headline and CTA modes start with three different editable examples. Sample buttons restore curated assets or copy; they are labelled accordingly. You can also upload your own transparent product PNG and logo. These files stay in your browser. Automatic background removal and AI generation require the local API version.
 
-Requires Node.js 22.9 or newer.
+| Capability | Public demo | Local app with your Meta key |
+| --- | --- | --- |
+| Four experiment modes, editing and placement previews | Included | Included |
+| PNG / nine-creative ZIP export | Included | Included |
+| Browser autosave and session Undo | Included | Included |
+| Product input | Included example or transparent PNG | PNG, JPG or WebP; SAM cutout |
+| Backgrounds | Bundled examples | Muse Image generation |
+| Headline / CTA alternatives | Curated examples or manual edits | Muse Spark suggestions or manual edits |
+| Hypothesis | Editable example | Muse Spark suggestion, editable |
+
+The public site is static. **It does not accept or store API keys.** To try real AI requests, run the app locally using the instructions below.
+
+## Run locally with your own Meta API key
+
+Requires **Node.js 22.9+** and an account with access to the Meta Model API models used below.
 
 ```sh
-npm install
+git clone https://github.com/muhamed-kanapiya/testbench.git
+cd testbench
+npm ci
 ```
 
-Create `.env.local` from `.env.example` and set `MODEL_API_KEY` to your Meta Model API key. Never put the key in a `NEXT_PUBLIC_` variable or commit it.
+Copy `.env.example` to `.env.local` using your editor, then add your own key:
+
+```dotenv
+MODEL_API_KEY=your_meta_model_api_key
+```
+
+Keep the key server-side in `.env.local`, which is excluded from Git. Never put it in a `NEXT_PUBLIC_` variable or a browser form.
 
 ```sh
 npm run dev
 ```
 
-Open the Local URL printed by Next.js. The landing page is `/`; the editor is `/studio`.
+Open the Local URL printed by Next.js. The landing page is `/`; the editor is `/studio`. The studio shows **Generation available** when the server has a key configured. Successful generation also depends on valid access, quota and model availability.
+
+For a first live test, keep the example product, choose Background and click **Generate three backgrounds**. Then try Headline or Call to action to generate B/C alternatives. For product extraction, upload a photo and describe its visible object with a simple noun such as `bottle`, `box` or `shoe`; review and approve the cutout before use.
+
+You can run the local app without a key to explore the included images and manual editing. Live generation remains unavailable. To preview exactly the public demo, use `build:pages` below.
 
 ```sh
 npm run typecheck
@@ -35,52 +67,57 @@ npm run build
 npm start
 ```
 
-If your network uses a Windows-trusted inspection certificate, provide the trusted CA bundle with `NODE_EXTRA_CA_CERTS` when starting Node. Certificate verification remains enabled.
+The dev/start commands bind to loopback. A public deployment of the full API version needs a server host and appropriate access controls. GitHub Pages only hosts the static demo.
 
-## Product flow
+If your network uses a Windows-trusted inspection certificate, provide its trusted CA bundle through `NODE_EXTRA_CA_CERTS` when starting Node; keep certificate verification enabled.
 
-1. Use the illustrative Morrow product or upload a PNG, JPG or WebP (up to 10 MB and 25 megapixels).
-2. For an opaque photo, describe the visible object with a simple noun such as `bottle`, `box` or `shoe`. SAM 3.1 segments the largest match. A transparent PNG keeps its existing alpha channel.
-3. Review and approve the cutout. The exact same source layer is used in all three variants. Position and scale stay fixed except in composition tests.
-4. Enter brand, headline, supporting line and CTA.
-5. Choose an experiment. Generate three backgrounds with Muse Image; adjust product position and size; or generate headline/CTA alternatives with Muse Spark. For wording tests, A is your baseline and B/C are suggestions you can edit. Composition and wording tests use one shared background. Headline font size and CTA button geometry stay identical across A/B/C within each format.
-6. Add a logo, badge, price, previous price, benefit line and branded CTA in the Overlays panel. Choose editorial or split composition. Offer details are user-supplied and shared by all variants.
-7. Switch between 4:5, 1:1 and 9:16. Backgrounds are cropped, while layers adapt consistently within each format according to the selected experiment. This version does not outpaint backgrounds.
-8. Inspect fixed layers, toggle the composition guide, and view Instagram Feed, Facebook Feed or Stories simulations. Interface elements and guides are not included in the exported artwork.
-9. Download one PNG in the selected format or export the nine-creative campaign kit.
+## How Meta powers the full app
 
-The ZIP contains three PNGs each at 1080 × 1350, 1080 × 1080 and 1080 × 1920, the product cutout, optional logo, an experiment JSON manifest with product SHA-256, variable, per-variant copy/transform, overlay settings, caption and asset provenance, and a short test setup guide. Blank/repeated wording, repeated composition presets and text overflow block export with an actionable message. The landing page links directly to each mode through `/studio?test=background`, `composition`, `headline` or `cta`.
+| Model | Role |
+| --- | --- |
+| `sam-3.1` | Product segmentation over the streaming Responses API; masks decoded with the official `@meta-sam/parser` |
+| `muse-image-1.0` | Background generation, separate from the unchanged foreground product |
+| `muse-spark-1.3` | Headline and CTA alternatives, plus an editable experiment hypothesis |
 
-## Integration
+Requests use Standard model IDs at `https://api.meta.ai/v1`, with API response storage disabled in application requests. Server routes validate images and requests and apply an in-process rate limit. Canvas handles composition and PNG rendering; JSZip packages the export. The current integration targets **Meta Model API**, not arbitrary AI providers.
 
-- `sam-3.1`: image segmentation over streaming Responses API; official `@meta-sam/parser` decodes the masks.
-- `muse-image-1.0`: background generation, separate from the fixed foreground product.
-- `muse-spark-1.3`: headline/CTA alternatives and an editable, uncertain and testable experiment hypothesis.
-- Canvas: deterministic product/copy composition and PNG rendering.
-- Server-side credentials, image limits, same-origin checks and an in-process request limit.
+## What an export contains
 
-The API base is `https://api.meta.ai/v1`. All requests use Standard model IDs. API response storage is disabled in application requests.
+- Three PNG variants in each format: **1080 × 1350**, **1080 × 1080** and **1080 × 1920**.
+- The source product cutout and optional logo.
+- `experiment.json`: selected variable, controlled elements, wording and asset provenance, overlay settings, caption, per-variant transforms and product SHA-256.
+- A short guide for setting up a randomized split test.
 
-## Scope and interpretation
+Blank/repeated wording, repeated composition presets and text overflow block export with an actionable message. Headlines share one font size across A/B/C within a format; CTA button geometry stays fixed when testing its wording. Backgrounds are cropped rather than outpainted. Guides and placement interface frames never appear in exported PNGs.
 
-This prototype prepares creative experiments. It does not run ads, predict CTR, declare a winner or prove statistical significance. Use a randomized split test with consistent targeting, placements and schedule. A complete background concept can change colour, light and props together; results cannot isolate those subcomponents. Composition tests vary position and scale together, not their individual effects. They use a shared editorial layout with a left badge to reserve product space. CTA tests change the wording inside the artwork; native placement CTA and post caption remain shared. Review generated wording before use.
+## Build and deploy the static demo
 
-One current project is autosaved in this browser and origin using IndexedDB, including product, logo, generated backgrounds and all mode settings. Version 2 drafts migrate to version 3 while retaining their assets and overlays. Switching modes preserves variants and individual hypotheses. Wait for “Saved in this browser” before closing. Undo keeps up to 25 recent changes in the current editing session; its history is not persisted. Editing the project in multiple tabs is not supported. Clearing browser data removes the draft; export for a separate copy. Storage errors are displayed and never represented as a successful save. The app has no accounts, cross-device sync or hosted storage. The included dev/start commands bind to loopback; public hosting and access control have not been configured.
+```sh
+npm run build:pages
+npm run preview:pages
+```
 
-Placement frames are simulations, not official Meta previews. Composition guides are design margins, not platform policy specifications or approval guarantees. Check the final placement in Ads Manager. Compare A/B/C within the same placement and format so format changes do not confound the experiment. The Stories frame is a static image preview; the app does not export video or Reels.
+Open `http://127.0.0.1:3212/testbench/`. The build creates `out/` with `NEXT_PUBLIC_DEMO_MODE=true` and the `/testbench` base path. It builds an isolated source copy without API routes, server API code or `.env` files, so the local development app is not interrupted.
 
-## Demo assets
+The [Pages workflow](.github/workflows/pages.yml) builds and deploys `out/` on pushes to `main`. In your fork, enable **Settings → Pages → Source → GitHub Actions** and adjust `NEXT_PUBLIC_BASE_PATH` in the workflow if your repository has a different name. Use an empty base path for a site hosted at the domain root. No Meta key or additional deployment secret is needed by this workflow.
 
-The Morrow brand and product are fictional. Included example images were created with the built-in imagegen tool, not returned by a live Meta request. The studio and exports explicitly distinguish examples from Meta-generated backgrounds. See `ASSETS.md` for the asset briefs and paths.
+## Scope and data
 
-## Verified
+TestBench prepares creative experiments. It does **not** run ads, predict CTR, choose a winner or establish statistical significance. Compare variants within the same placement and format using a randomized split test with consistent targeting, destination, schedule and optimization.
 
-TypeScript and optimized production build; live SAM product extraction; live Muse Image generation of three backgrounds; live Muse Spark hypothesis; browser editing and ZIP export. The exported PNGs were checked at 1080 × 1350 and the shared product interior compared across variants with tolerance for source alpha compositing.
+Background tests vary a complete concept, which can include colour, light and props together. Composition tests vary position and size together. CTA tests change wording inside the image; the native placement button and caption stay shared. Placement frames are simulations, and composition guides are design margins rather than official approval checks. Review the final placement in Ads Manager. Stories previews and exports are static images, not videos.
 
-Placement studio checks: draft restoration after reload (including generated backgrounds and overlay values), Undo, PNG logo upload, editorial/split compositions, Instagram/Facebook/Stories previews, mobile layout, overlong-headline export rejection, and a nine-image ZIP with dimensions and product SHA-256 verified. Product-core RGB differences across backgrounds stay within the source alpha-compositing bound. Exact final RGB equality is not expected for partially transparent product pixels.
+One project is autosaved in IndexedDB in the current browser and origin. The demo uses separate draft storage from the full app. Undo keeps up to 25 changes in the current session. Wait for **Saved in this browser** before closing; export a kit for a separate copy. Multiple-tab editing is unsupported. Clearing browser data removes the saved draft. There are no accounts, cross-device sync or hosted project storage. The page loads fonts from Google Fonts; product and logo uploads in demo mode are processed locally.
 
-Experiment mode checks: v2 draft migration, variable isolation, duplicate rejection, hypothesis preservation, live Meta headline and CTA generation, and all three new modes exported in all three formats. Pixel comparison of the actual exported PNGs found zero differences outside the selected variable region. CTA button bounds remain identical; source product SHA-256 and shared background are verified in each ZIP.
+## Example asset provenance
 
+Morrow is a fictional brand. Bundled example images were created with the built-in imagegen tool, **not** returned by a live Meta request. Copy examples are curated. The editor and export manifest distinguish examples, manual edits and Meta-generated content. See [ASSETS.md](ASSETS.md) for asset details.
+
+## Validation
+
+The full prototype has been checked with TypeScript and a production build, live SAM extraction, Muse Image backgrounds and Muse Spark copy/hypotheses. Browser checks covered editing, draft restoration, Undo, overlays, placement previews and nine-image exports. Prior export checks verified dimensions, product hashes, variable isolation and consistent CTA bounds.
+
+The static demo is built separately with no API routes. Its release checks include base-path asset loading, ready-to-edit wording examples, browser-only uploads, autosave, placement previews and export.
 
 ## Contact
 

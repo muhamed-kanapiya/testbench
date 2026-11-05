@@ -1,5 +1,7 @@
 import { CONCEPTS, DEFAULT_OFFER, type Offer, type Variant } from "./experiment";
 
+import { assetPath, DEMO_MODE, sampleWording } from "./runtime";
+
 export const FORMATS = {
   portrait: { label: "4:5", name: "Portrait", width: 1080, height: 1350 },
   square: { label: "1:1", name: "Square", width: 1080, height: 1080 },
@@ -17,8 +19,8 @@ export type TestSettings = {
 };
 export function defaultTest(offer: Offer): TestSettings {
   return { mode: "background", sharedBackground: "studio", compositions: [{ x: 45, scale: 90 }, { x: 60, scale: 75 }, { x: 75, scale: 100 }],
-    headlines: [offer.headline, offer.headline, offer.headline], ctas: [offer.cta, offer.cta, offer.cta],
-    headlineSources: ["original", "original", "original"], ctaSources: ["original", "original", "original"], hypotheses: {} };
+    headlines: DEMO_MODE ? sampleWording("headline", offer.headline) : [offer.headline, offer.headline, offer.headline], ctas: DEMO_MODE ? sampleWording("cta", offer.cta) : [offer.cta, offer.cta, offer.cta],
+    headlineSources: ["original", DEMO_MODE ? "example" : "original", DEMO_MODE ? "example" : "original"], ctaSources: ["original", DEMO_MODE ? "example" : "original", DEMO_MODE ? "example" : "original"], hypotheses: {} };
 }
 export type Overlays = {
   logo: string; accent: string; ink: string; layout: "editorial" | "split";
@@ -40,12 +42,12 @@ export type Project = {
 export function newProject(): Project {
   return {
     version: 3, offer: { ...DEFAULT_OFFER }, variants: CONCEPTS.map(v => ({ ...v })), test: defaultTest(DEFAULT_OFFER),
-    product: "/assets/product.png", productSource: "Illustrative example product", productLabel: "bottle", approved: true,
+    product: assetPath("/assets/product.png"), productSource: "Illustrative example product", productLabel: "bottle", approved: true,
     hypothesis: "An everyday setting may help people picture the product in their own routine. Compare link click-through rate across these three background concepts.",
     overlays: { ...DEFAULT_OVERLAYS }, format: "portrait", caption: "A little more feel-good. Find your everyday ritual with morrow.",
   };
 }
-const imageAllowed = (v: unknown) => typeof v === "string" && (v.startsWith("/assets/") || /^data:image\/(png|jpeg|webp);base64,/.test(v));
+const imageAllowed = (v: unknown) => typeof v === "string" && (v.startsWith(assetPath("/assets/")) || /^data:image\/(png|jpeg|webp);base64,/.test(v));
 function isSavedBase(value: unknown): value is Project {
   if (!value || typeof value !== "object") return false;
   const p = value as Project;

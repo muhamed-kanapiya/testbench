@@ -134,3 +134,21 @@ export async function prepareLogo(file: File) {
     canvas.getContext("2d")!.drawImage(image, 0, 0, canvas.width, canvas.height); return canvas.toDataURL("image/png");
   } finally { URL.revokeObjectURL(src); cache.delete(src); }
 }
+
+// Static demo uploads stay in the browser. Background removal needs the local API.
+export async function prepareDemoProduct(file: File) {
+  if (file.type !== "image/png" || file.size > 10 * 1024 * 1024) throw new Error("Use a transparent PNG under 10 MB. For background removal, run locally with your Meta API key.");
+  const src = URL.createObjectURL(file);
+  try {
+    const image = await loadImage(src);
+    if (image.width * image.height > 25_000_000) throw new Error("Choose an image under 25 megapixels.");
+    const canvas = document.createElement("canvas"), scale = Math.min(1, 1600 / Math.max(image.width, image.height));
+    canvas.width = Math.max(1, Math.round(image.width * scale)); canvas.height = Math.max(1, Math.round(image.height * scale));
+    const ctx = canvas.getContext("2d")!; ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let transparent = false, visible = false;
+    for (let i = 3; i < pixels.length; i += 4) { if (pixels[i] < 250) transparent = true; if (pixels[i] > 0) visible = true; if (transparent && visible) break; }
+    if (!visible || !transparent) throw new Error("Choose a PNG with a visible product and transparent background. Automatic cutout is available in the local API version.");
+    return canvas.toDataURL("image/png");
+  } finally { URL.revokeObjectURL(src); cache.delete(src); }
+}

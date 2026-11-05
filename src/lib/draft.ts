@@ -1,9 +1,11 @@
 import { migrateProject, type Project } from "./studio-model";
 
+import { DEMO_MODE } from "./runtime";
+
 let database: Promise<IDBDatabase> | undefined;
 function openDatabase() {
   if (!database) database = new Promise<IDBDatabase>((resolve, reject) => {
-    const request = indexedDB.open("testbench-drafts", 1);
+    const request = indexedDB.open(DEMO_MODE ? "testbench-demo-drafts" : "testbench-drafts", 1);
     request.onupgradeneeded = () => request.result.createObjectStore("drafts");
     request.onsuccess = () => { const db = request.result; db.onversionchange = () => { db.close(); database = undefined; }; resolve(db); };
     request.onerror = () => { database = undefined; reject(request.error); };

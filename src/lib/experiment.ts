@@ -1,3 +1,5 @@
+import { assetPath } from "./runtime";
+
 export type ConceptId = "studio" | "home" | "nature";
 export type Offer = { brand: string; headline: string; price: string; cta: string };
 export type Variant = {
@@ -18,9 +20,9 @@ export const DEFAULT_OFFER: Offer = {
 };
 
 export const CONCEPTS: Variant[] = [
-  { id: "studio", name: "The studio", description: "Clean, focused, considered.", color: "#ded9f2", image: "/assets/background-studio.png", source: "example", prompt: "A minimal pale lavender seamless photography studio with a continuous flat matte surface flowing into a curved cyclorama wall. Tactile lilac plaster, soft side light. No pedestal, no raised platforms, no props, no visible table edges." },
-  { id: "home", name: "At home", description: "A place in their everyday.", color: "#d5e7ef", image: "/assets/background-home.png", source: "example", prompt: "A contemporary home bathroom with a powder-blue ceramic tiled shelf, light sky-blue wall, soft natural window light, tiny cropped pale linen towel at extreme edge. Inviting everyday context." },
-  { id: "nature", name: "Outside", description: "A fresh frame of reference.", color: "#efdfd3", image: "/assets/background-nature.png", source: "example", prompt: "A sun-washed pale peach stone ledge in a minimal Mediterranean botanical setting, pale apricot plaster backdrop, delicate olive branch at far upper right, subtle soft leaf shadows at edge, natural editorial atmosphere." },
+  { id: "studio", name: "The studio", description: "Clean, focused, considered.", color: "#ded9f2", image: assetPath("/assets/background-studio.png"), source: "example", prompt: "A minimal pale lavender seamless photography studio with a continuous flat matte surface flowing into a curved cyclorama wall. Tactile lilac plaster, soft side light. No pedestal, no raised platforms, no props, no visible table edges." },
+  { id: "home", name: "At home", description: "A place in their everyday.", color: "#d5e7ef", image: assetPath("/assets/background-home.png"), source: "example", prompt: "A contemporary home bathroom with a powder-blue ceramic tiled shelf, light sky-blue wall, soft natural window light, tiny cropped pale linen towel at extreme edge. Inviting everyday context." },
+  { id: "nature", name: "Outside", description: "A fresh frame of reference.", color: "#efdfd3", image: assetPath("/assets/background-nature.png"), source: "example", prompt: "A sun-washed pale peach stone ledge in a minimal Mediterranean botanical setting, pale apricot plaster backdrop, delicate olive branch at far upper right, subtle soft leaf shadows at edge, natural editorial atmosphere." },
 ];
 
 export function experimentManifest(offer: Offer, variants: Variant[], productSource: string, hypothesis: string) {
